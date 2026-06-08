@@ -204,7 +204,6 @@
         }
 
         function obterLocalizacao() {
-            const btn = document.getElementById('btnRegistrar');
             const inputMatricula = "Visitante";
 
             if (!navigator.geolocation) {
@@ -212,7 +211,6 @@
                 return;
             }
 
-            btn.disabled = true;
             mostrarStatus("Buscando localização via GPS...", "loading");
 
             navigator.geolocation.getCurrentPosition(
@@ -243,9 +241,6 @@
                     }
                 },
                 (error) => {
-                    const btn = document.getElementById('btnRegistrar');
-                    if (btn) btn.disabled = false;
-
                     let msg = "Erro ao buscar GPS.";
                     if (error.code === 1) msg = "Permissão negada. Clique no cadeado 🔒 na barra de endereços para permitir e recarregue a página.";
                     else if (error.code === 2) msg = "Sinal de GPS indisponível.";

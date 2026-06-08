@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,17 +27,17 @@
             padding: 0;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 100vh; 
-            background-color: var(--bg-color); 
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
             color: var(--text-color);
             background-image: radial-gradient(circle at top right, rgba(0, 112, 243, 0.15), transparent 400px),
-                              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 400px);
+                radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 400px);
         }
 
         .card {
@@ -106,21 +107,21 @@
             box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
         }
 
-        button { 
+        button {
             width: 100%;
-            padding: 14px; 
-            font-size: 16px; 
+            padding: 14px;
+            font-size: 16px;
             font-weight: 600;
-            color: white; 
-            background-color: var(--primary); 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
+            color: white;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
         }
 
-        button:hover { 
-            background-color: var(--primary-hover); 
+        button:hover {
+            background-color: var(--primary-hover);
         }
 
         button:active {
@@ -133,8 +134,8 @@
             cursor: not-allowed;
         }
 
-        #status { 
-            margin-top: 20px; 
+        #status {
+            margin-top: 20px;
             font-size: 14px;
             font-weight: 600;
             min-height: 20px;
@@ -142,16 +143,27 @@
             transition: opacity 0.3s ease;
         }
 
-        .status-success { color: var(--success); opacity: 1 !important; }
-        .status-error { color: var(--error); opacity: 1 !important; }
-        .status-loading { color: var(--primary); opacity: 1 !important; }
-        
+        .status-success {
+            color: var(--success);
+            opacity: 1 !important;
+        }
+
+        .status-error {
+            color: var(--error);
+            opacity: 1 !important;
+        }
+
+        .status-loading {
+            color: var(--primary);
+            opacity: 1 !important;
+        }
+
         /* Spinner CSS */
         .spinner {
             display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
@@ -160,16 +172,17 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="card">
         <h2>Bem-vindo(a)!</h2>
-        <p class="subtitle">Confirme sua presença no local de estágio clicando no botão abaixo.</p>
-        <button id="btnRegistrar" onclick="obterLocalizacao()">Compartilhar Localização</button>
         <p id="status"></p>
     </div>
 
@@ -177,14 +190,13 @@
         // Como o frontend e backend agora rodam no mesmo servidor, usamos um caminho relativo!
         // Isso funciona perfeitamente tanto no seu PC (localhost) quanto no Render.
         const API_URL = "/api/registrar-localizacao";
-        
-        // Tenta preencher a matrícula via URL (ex: ?mat=123456)
+
         // Removido o window.onload automático para esperar o clique do usuário
 
         function mostrarStatus(mensagem, tipo) {
             const statusLabel = document.getElementById('status');
             statusLabel.className = `status-${tipo}`;
-            statusLabel.innerHTML = tipo === 'loading' 
+            statusLabel.innerHTML = tipo === 'loading'
                 ? `<span class="spinner"></span>${mensagem}`
                 : mensagem;
         }
@@ -230,13 +242,13 @@
                 },
                 (error) => {
                     const btn = document.getElementById('btnRegistrar');
-                    if(btn) btn.disabled = false;
-                    
+                    if (btn) btn.disabled = false;
+
                     let msg = "Erro ao buscar GPS.";
                     if (error.code === 1) msg = "Permissão negada. Clique no cadeado 🔒 na barra de endereços para permitir e recarregue a página.";
                     else if (error.code === 2) msg = "Sinal de GPS indisponível.";
                     else if (error.code === 3) msg = "Tempo limite para buscar localização excedido. Tente novamente.";
-                    
+
                     mostrarStatus(msg, "error");
                 },
                 { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
@@ -244,4 +256,5 @@
         }
     </script>
 </body>
+
 </html>

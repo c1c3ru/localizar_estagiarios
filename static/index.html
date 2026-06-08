@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Localização de Estágio</title>
+    <!-- Fonte Moderna do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0070f3;
+            --primary-hover: #0051a8;
+            --success: #10b981;
+            --error: #ef4444;
+            --bg-color: #0a0a0a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #ffffff;
+            --text-muted: #888888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+            background-image: radial-gradient(circle at top right, rgba(0, 112, 243, 0.15), transparent 400px),
+                              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 400px);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-weight: 800;
+            font-size: 24px;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, #888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
+        }
+
+        button { 
+            width: 100%;
+            padding: 14px; 
+            font-size: 16px; 
+            font-weight: 600;
+            color: white; 
+            background-color: var(--primary); 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover); 
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #333;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        #status { 
+            margin-top: 20px; 
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-success { color: var(--success); opacity: 1 !important; }
+        .status-error { color: var(--error); opacity: 1 !important; }
+        .status-loading { color: var(--primary); opacity: 1 !important; }
+        
+        /* Spinner CSS */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Bem-vindo(a)!</h2>
+        <p class="subtitle">Estamos registrando sua presença no estágio...</p>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        // Como o frontend e backend agora rodam no mesmo servidor, usamos um caminho relativo!
+        // Isso funciona perfeitamente tanto no seu PC (localhost) quanto no Render.
+        const API_URL = "/api/registrar-localizacao";
+        
+        // Tenta preencher a matrícula via URL (ex: ?mat=123456)
+        window.onload = () => {
+            // Inicia o processo de localização assim que a página abre
+            obterLocalizacao();
+        };
+
+        function mostrarStatus(mensagem, tipo) {
+            const statusLabel = document.getElementById('status');
+            statusLabel.className = `status-${tipo}`;
+            statusLabel.innerHTML = tipo === 'loading' 
+                ? `<span class="spinner"></span>${mensagem}`
+                : mensagem;
+        }
+
+        function obterLocalizacao() {
+            // Como não precisamos de matrícula agora, enviaremos apenas 'Visitante'
+            const inputMatricula = "Visitante";
+
+            if (!navigator.geolocation) {
+                mostrarStatus("Seu navegador não suporta geolocalização.", "error");
+                return;
+            }
+
+            mostrarStatus("Buscando localização via GPS...", "loading");
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const dados = {
+                        matricula: inputMatricula,
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        precisao_metros: position.coords.accuracy
+                    };
+
+                    try {
+                        mostrarStatus("Enviando dados para o servidor...", "loading");
+                        const response = await fetch(API_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(dados)
+                        });
+
+                        if (response.ok) {
+                            mostrarStatus("Localização registrada com sucesso no sistema!", "success");
+                        } else {
+                            mostrarStatus("Erro ao enviar localização para o servidor.", "error");
+                        }
+                    } catch (error) {
+                        console.error("Erro na requisição:", error);
+                        mostrarStatus("Erro de conexão com o servidor. Verifique a URL da API.", "error");
+                    }
+                },
+                (error) => {
+                    let msg = "Erro ao buscar GPS.";
+                    if (error.code === 1) msg = "Permissão negada. Clique no cadeado 🔒 na barra de endereços para permitir e recarregue a página.";
+                    else if (error.code === 2) msg = "Sinal de GPS indisponível.";
+                    else if (error.code === 3) msg = "Tempo limite para buscar localização excedido.";
+                    
+                    mostrarStatus(msg, "error");
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+    </script>
+</body>
+</html>

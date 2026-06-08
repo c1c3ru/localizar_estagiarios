@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import datetime
+import json
+import os
 
 app = FastAPI(title="API Localização de Estágio")
 
@@ -17,6 +19,17 @@ app.add_middleware(
 
 # Banco de dados em memória temporário (uma lista simples)
 historico_localizacoes = []
+
+ARQUIVO_CACHE = "dados.json"
+
+# Carregar dados salvos ao iniciar o servidor
+if os.path.exists(ARQUIVO_CACHE):
+    try:
+        with open(ARQUIVO_CACHE, "r", encoding="utf-8") as f:
+            historico_localizacoes = json.load(f)
+    except Exception as e:
+        print("Erro ao carregar cache local:", e)
+        historico_localizacoes = []
 
 # Serve a página HTML na rota raiz (Visão do Aluno)
 @app.get("/")
@@ -59,6 +72,13 @@ async def registrar_localizacao(dados: LocalizacaoAluno, request: Request):
         "ip": ip_cliente
     }
     historico_localizacoes.append(registro)
+
+    # Salvar a lista atualizada no arquivo local (cache)
+    try:
+        with open(ARQUIVO_CACHE, "w", encoding="utf-8") as f:
+            json.dump(historico_localizacoes, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print("Erro ao salvar no cache:", e)
 
     # Log no terminal com Link para o Google Maps
     link_google_maps = f"https://www.google.com/maps?q={dados.latitude},{dados.longitude}"

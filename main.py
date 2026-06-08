@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -41,7 +41,12 @@ class LocalizacaoAluno(BaseModel):
     precisao_metros: float
 
 @app.post("/api/registrar-localizacao")
-async def registrar_localizacao(dados: LocalizacaoAluno):
+async def registrar_localizacao(dados: LocalizacaoAluno, request: Request):
+    # Obtém o IP do header X-Forwarded-For (usado em hospedagens como Render/Netlify) ou usa o IP da conexão direta
+    ip_cliente = request.headers.get("X-Forwarded-For", request.client.host if request.client else "Desconhecido")
+    if ip_cliente:
+        ip_cliente = ip_cliente.split(",")[0].strip()
+
     hora_atual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     # Salvar na lista em memória para mostrar no mapa depois
@@ -50,14 +55,15 @@ async def registrar_localizacao(dados: LocalizacaoAluno):
         "latitude": dados.latitude,
         "longitude": dados.longitude,
         "precisao_metros": dados.precisao_metros,
-        "hora": hora_atual
+        "hora": hora_atual,
+        "ip": ip_cliente
     }
     historico_localizacoes.append(registro)
 
     # Log no terminal com Link para o Google Maps
     link_google_maps = f"https://www.google.com/maps?q={dados.latitude},{dados.longitude}"
     
-    print(f"[{hora_atual}] Aluno(a) matrícula: {dados.matricula} localizado.")
+    print(f"[{hora_atual}] Aluno(a) matrícula: {dados.matricula} (IP: {ip_cliente}) localizado.")
     print(f"Coordenadas: {dados.latitude}, {dados.longitude} (Precisão: {dados.precisao_metros}m)")
     print(f"Mapa: {link_google_maps}")
     print("-" * 50)

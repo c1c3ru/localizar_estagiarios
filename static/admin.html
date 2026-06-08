@@ -98,6 +98,7 @@
                 localizacoes.forEach(loc => {
                     const textoPopup = `
                         <b>Matrícula:</b> ${loc.matricula}<br>
+                        <b>IP:</b> ${loc.ip || 'Desconhecido'}<br>
                         <b>Data/Hora:</b> ${loc.hora}<br>
                         <b>Precisão GPS:</b> ${Math.round(loc.precisao_metros)} metros
                     `;

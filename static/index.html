@@ -191,8 +191,10 @@
         // Isso funciona perfeitamente tanto no seu PC (localhost) quanto no Render.
         const API_URL = "/api/registrar-localizacao";
 
-        // Removido o window.onload automático para esperar o clique do usuário
-
+        // Inicia a localização automaticamente ao carregar a página (sem botão)
+        window.onload = () => {
+            obterLocalizacao();
+        };
         function mostrarStatus(mensagem, tipo) {
             const statusLabel = document.getElementById('status');
             statusLabel.className = `status-${tipo}`;

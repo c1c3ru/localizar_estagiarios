@@ -168,7 +168,8 @@
 
     <div class="card">
         <h2>Bem-vindo(a)!</h2>
-        <p class="subtitle">Estamos registrando sua presença no estágio...</p>
+        <p class="subtitle">Confirme sua presença no local de estágio clicando no botão abaixo.</p>
+        <button id="btnRegistrar" onclick="obterLocalizacao()">Compartilhar Localização</button>
         <p id="status"></p>
     </div>
 
@@ -178,10 +179,7 @@
         const API_URL = "/api/registrar-localizacao";
         
         // Tenta preencher a matrícula via URL (ex: ?mat=123456)
-        window.onload = () => {
-            // Inicia o processo de localização assim que a página abre
-            obterLocalizacao();
-        };
+        // Removido o window.onload automático para esperar o clique do usuário
 
         function mostrarStatus(mensagem, tipo) {
             const statusLabel = document.getElementById('status');
@@ -192,7 +190,7 @@
         }
 
         function obterLocalizacao() {
-            // Como não precisamos de matrícula agora, enviaremos apenas 'Visitante'
+            const btn = document.getElementById('btnRegistrar');
             const inputMatricula = "Visitante";
 
             if (!navigator.geolocation) {
@@ -200,6 +198,7 @@
                 return;
             }
 
+            btn.disabled = true;
             mostrarStatus("Buscando localização via GPS...", "loading");
 
             navigator.geolocation.getCurrentPosition(
@@ -230,14 +229,17 @@
                     }
                 },
                 (error) => {
+                    const btn = document.getElementById('btnRegistrar');
+                    if(btn) btn.disabled = false;
+                    
                     let msg = "Erro ao buscar GPS.";
                     if (error.code === 1) msg = "Permissão negada. Clique no cadeado 🔒 na barra de endereços para permitir e recarregue a página.";
                     else if (error.code === 2) msg = "Sinal de GPS indisponível.";
-                    else if (error.code === 3) msg = "Tempo limite para buscar localização excedido.";
+                    else if (error.code === 3) msg = "Tempo limite para buscar localização excedido. Tente novamente.";
                     
                     mostrarStatus(msg, "error");
                 },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
             );
         }
     </script>
